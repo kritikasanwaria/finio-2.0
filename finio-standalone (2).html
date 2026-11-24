@@ -1,0 +1,3138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finio — Personal Finance</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+
+:root {
+  --bg:      #0A0A0F; 
+  --bg2:     #111118; 
+  --bg3:     #18181F; 
+  --bg4:     #1E1E28; 
+
+  --border:  #ffffff0f; 
+  --border2: #ffffff18; 
+
+  --accent:     #C8F55A;
+  --accent2:    #9EE832; 
+  --accent-dim: #C8F55A22; 
+
+  --text:  #F0EFE8; 
+  --text2: #9896A0; 
+  --text3: #605E6A; 
+
+  --inc:    #4FFFB0;
+  --inc-bg: #4FFFB015; 
+  --exp:    #FF6B6B;
+  --exp-bg: #FF6B6B15; 
+
+  --r:  12px; 
+  --r2: 16px; 
+  --r3: 20px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+.app {
+  min-height: 100vh;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.app::before {
+  content: '';
+  position: fixed;
+  inset: 0; 
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+.screen {
+  display: none;
+  position: relative;
+  z-index: 1; 
+}
+.screen.active {
+  display: block;
+}
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.auth-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #C8F55A18 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.auth-card {
+  width: 380px;
+  position: relative;
+  z-index: 2; 
+}
+
+.auth-wordmark {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.auth-wordmark .logo-text {
+  font-family: 'DM Serif Display', serif;
+  font-size: 38px;
+  color: var(--text);
+  letter-spacing: -1px;
+}
+.auth-wordmark .logo-dot {
+  color: var(--accent); 
+}
+.auth-wordmark p {
+  font-size: 12px;
+  color: var(--text3);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.auth-box {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--r3);
+  padding: 2.25rem;
+  backdrop-filter: blur(20px); 
+}
+
+.field {
+  margin-bottom: 1.125rem;
+}
+.field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.field input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg4);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim); 
+}
+.field input::placeholder {
+  color: var(--text3);
+}
+
+.btn-auth {
+  width: 100%;
+  padding: 13px;
+  background: var(--accent);
+  color: #0A0A0F; 
+  border: none;
+  border-radius: var(--r);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  letter-spacing: 0.04em;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-auth:hover  { background: var(--accent2); }
+.btn-auth:active { transform: scale(0.99); } 
+
+.auth-toggle {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 1.25rem;
+}
+.auth-toggle a {
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.err-msg {
+  color: var(--exp);
+  font-size: 11px;
+  margin-top: 6px;
+  display: none; 
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.75rem;
+  height: 58px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  position: sticky; /* stays at top when you scroll */
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(10px);
+}
+
+.topbar-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+}
+.topbar-logo span {
+  color: var(--accent);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* The pill that shows user initials + name */
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 5px 14px 5px 5px;
+}
+
+/* Circular initials avatar */
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  border: 1.5px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.user-chip span {
+  font-size: 12px;
+  color: var(--text2);
+  font-weight: 500;
+}
+
+/* Sign out button */
+.btn-signout {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 7px 16px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text3);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.04em;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-signout:hover {
+  border-color: var(--border2);
+  color: var(--text);
+}
+
+.main-layout {
+  display: grid;
+  grid-template-columns: 224px 1fr; /* sidebar | content */
+  min-height: calc(100vh - 58px);   /* fill screen minus topbar height */
+}
+
+.sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  padding: 1.25rem 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Small uppercase section headings ("Menu", "My Accounts") */
+.nav-section-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 10px 1.25rem 4px;
+}
+
+/* A single navigation item in the sidebar */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 1.25rem;
+  font-size: 13px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  border-left: 2px solid transparent; /* invisible by default */
+  margin: 1px 0;
+}
+.nav-item:hover {
+  color: var(--text);
+  background: var(--bg3);
+}
+/* Active item gets an accent-colored left border + tinted background */
+.nav-item.active {
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-left-color: var(--accent);
+  font-weight: 500;
+}
+
+/* Horizontal rule between sections */
+.nav-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 1rem 0;
+}
+
+/* Each account listed in the "My Accounts" section */
+.nav-acc-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 1.25rem;
+  font-size: 12px;
+  color: var(--text3);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  border-left: 2px solid transparent;
+}
+.nav-acc-item:hover {
+  color: var(--text);
+  background: var(--bg3);
+}
+/* Highlighted when that account's detail page is open */
+.nav-acc-item.active-acc {
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-left-color: var(--accent);
+}
+
+/* Small coloured dot next to each account name */
+.acc-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.content {
+  padding: 1.75rem;
+  background: var(--bg);
+  overflow-y: auto;
+}
+
+/*
+  Each page (dashboard, accounts, history, etc.).
+  Only the one with class "active" is shown — JS controls this.
+  fadeUp animation plays when a page becomes active.
+*/
+.page {
+  display: none;
+  animation: fadeUp 0.25s ease;
+}
+.page.active {
+  display: block;
+}
+
+/* Slide-up + fade-in animation for page transitions */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Row at the top of each page: title left, button right */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.75rem;
+}
+
+/* Page title ("Overview", "Accounts", etc.) */
+.page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+/* Subtitle below page title */
+.page-sub {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* Green "New transaction" / "Add" / "New account" buttons */
+.btn-new {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--accent);
+  color: #0A0A0F;
+  border: none;
+  border-radius: 50px;
+  padding: 9px 18px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-new:hover  { background: var(--accent2); }
+.btn-new:active { transform: scale(0.98); }
+.btn-new svg    { width: 12px; height: 12px; }
+
+/* "← All accounts" back button */
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text3);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.btn-back:hover {
+  border-color: var(--border2);
+  color: var(--text);
+}
+
+/* Groups back + add buttons together */
+.hdr-btns {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+/* Individual metric card */
+.metric {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.metric:hover {
+  border-color: var(--border2);
+  transform: translateY(-1px); /* subtle lift on hover */
+}
+
+.metric::after {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.04;
+}
+
+/* Label above the number (e.g. "Net worth") */
+.metric-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 10px;
+}
+
+/* The big number */
+.metric-val {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+.metric-val.g { color: var(--inc); } /* green for income */
+.metric-val.r { color: var(--exp); } /* red for expenses */
+
+/* Small pill badge below the number */
+.metric-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 8px;
+  padding: 3px 9px;
+  border-radius: 50px;
+  letter-spacing: 0.04em;
+}
+.metric-badge.up { background: var(--inc-bg); color: var(--inc); }
+.metric-badge.dn { background: var(--exp-bg); color: var(--exp); }
+
+.card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 1.25rem;
+  margin-bottom: 12px;
+}
+
+/* Card header row: title left, optional action link right */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.card-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+/* "View all →" style clickable text */
+.card-action {
+  font-size: 11px;
+  color: var(--accent);
+  cursor: pointer;
+  opacity: 0.8;
+  font-weight: 500;
+}
+.card-action:hover { opacity: 1; }
+
+.txn-row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.txn-row:last-child { border-bottom: none; }
+
+/* When hovering the row, make the action buttons visible */
+.txn-row:hover .txn-actions {
+  opacity: 1;
+}
+
+/* Coloured square icon on the left (shows emoji) */
+.txn-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0; /* don't let it shrink when space is tight */
+}
+
+/* Text block: name + meta info */
+.txn-info {
+  flex: 1;       /* takes up all remaining space */
+  min-width: 0;  /* prevents text from overflowing */
+}
+.txn-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+.txn-meta {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+/* Pill badge showing the category (e.g. "Food", "Rent") */
+.cat-pill {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 50px;
+  background: var(--bg4);
+  color: var(--text3);
+  border: 1px solid var(--border);
+}
+
+/* Right side: action buttons + amount */
+.txn-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* The amount (e.g. "+₹75,000") */
+.txn-amt {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+  font-family: 'DM Serif Display', serif;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+.txn-amt.i { color: var(--inc); } /* income = green */
+.txn-amt.e { color: var(--exp); } /* expense = red */
+
+/* Edit + Delete button container — hidden by default */
+.txn-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0; /* invisible until row is hovered */
+  transition: opacity 0.15s;
+}
+
+/* Individual edit / delete icon buttons */
+.txn-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.15s;
+  color: var(--text3);
+  padding: 0;
+}
+.txn-btn:hover {
+  border-color: var(--border2);
+  background: var(--bg3);
+  color: var(--text);
+}
+/* Delete button turns red on hover */
+.txn-btn.del:hover {
+  border-color: #FF6B6B40;
+  background: var(--exp-bg);
+  color: var(--exp);
+}
+
+.acc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Each account card */
+.acc-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.acc-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+}
+
+/* Coloured pill showing account type (Bank, Wallet, etc.) */
+.acc-type-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 50px;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.acc-name       { font-size: 14px; font-weight: 500; color: var(--text); }
+.acc-bal        { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--text); letter-spacing: -0.5px; margin-top: 1rem; }
+.acc-bal-label  { font-size: 10px; color: var(--text3); margin-top: 3px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+
+/* Row of 3 stats at the bottom of each account card (Income / Expenses / Txns) */
+.acc-stats-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.acc-stat       { flex: 1; }
+.acc-stat-label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 3px; }
+.acc-stat-val   { font-size: 13px; font-weight: 600; }
+
+/* Dashed "Add account" card */
+.add-acc-card {
+  background: transparent;
+  border: 1px dashed var(--border2);
+  border-radius: var(--r2);
+  padding: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: border-color 0.2s, background 0.2s;
+  min-height: 170px;
+}
+.add-acc-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.add-acc-card span { font-size: 12px; color: var(--text3); font-weight: 500; }
+.add-acc-card:hover span { color: var(--accent); }
+
+/* The "+" circle inside the add card */
+.plus-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg4);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text3);
+  font-size: 20px;
+  transition: all 0.2s;
+  font-weight: 300;
+}
+.add-acc-card:hover .plus-icon {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.acc-detail-header {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 1.5rem;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Coloured glow circle in the top-right (colour matches account) */
+.acc-detail-glow {
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+.acc-detail-type { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 4px 10px; border-radius: 50px; display: inline-block; margin-bottom: 0.75rem; }
+.acc-detail-name { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 0.25rem; letter-spacing: -0.3px; }
+.acc-detail-bal  { font-family: 'DM Serif Display', serif; font-size: 38px; letter-spacing: -1px; margin-top: 1rem; line-height: 1; }
+
+/* 3-column grid for Total Income / Expenses / This Month */
+.acc-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 1.25rem;
+}
+
+/* Each stat box in the 3-column grid */
+.ads       { background: var(--bg4); border-radius: var(--r); padding: 0.875rem; }
+.ads-label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 5px; }
+.ads-val   { font-size: 17px; font-weight: 600; font-family: 'DM Serif Display', serif; letter-spacing: -0.3px; }
+.ads-val.g { color: var(--inc); }
+.ads-val.r { color: var(--exp); }
+
+.chart-wrap {
+  display: flex;
+  align-items: flex-end; /* bars grow upward from the bottom */
+  gap: 10px;
+  height: 64px;
+  margin-top: 14px;
+}
+.chart-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+.chart-bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0; /* rounded top only */
+  transition: height 0.3s;
+}
+.chart-label {
+  font-size: 9px;
+  color: var(--text3);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Decorative dot row below the Net Worth number */
+.sparkline {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 10px;
+}
+.spark-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.35;
+}
+.spark-dot.hi {
+  opacity: 1;
+  width: 6px;
+  height: 6px; /* the last dot is bigger/brighter */
+}
+
+/* Net savings display */
+.net-display {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 0.875rem;
+}
+.net-val     { font-family: 'DM Serif Display', serif; font-size: 28px; letter-spacing: -0.5px; }
+.net-val.pos { color: var(--inc); } /* positive savings = green */
+.net-val.neg { color: var(--exp); } /* negative savings = red */
+
+.filter-row {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+/* Individual filter pill (All, Food, Travel, etc.) */
+.f-btn {
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg3);
+  color: var(--text3);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+  letter-spacing: 0.04em;
+}
+.f-btn:hover { border-color: var(--border2); color: var(--text2); }
+
+/* Active/selected filter pill */
+.f-btn.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 200; /* above everything else */
+  align-items: center;
+  justify-content: center;
+}
+.modal-bg.open {
+  display: flex; 
+}
+
+.modal {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--r3);
+  padding: 2rem;
+  width: 380px;
+  max-width: 92%;
+  animation: modalIn 0.2s ease;
+}
+
+/* Slide-up + scale-in animation when modal opens */
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+.modal-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.3px;
+}
+
+.type-seg {
+  display: flex;
+  background: var(--bg4);
+  border-radius: var(--r);
+  padding: 3px;
+  margin-bottom: 1.25rem;
+  gap: 3px;
+}
+.seg-btn {
+  flex: 1;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  border-radius: 9px;
+  transition: all 0.15s;
+  letter-spacing: 0.04em;
+}
+.seg-btn.active.i { background: var(--inc-bg); color: var(--inc); border: 1px solid #4FFFB035; }
+.seg-btn.active.e { background: var(--exp-bg); color: var(--exp); border: 1px solid #FF6B6B35; }
+
+.modal-footer {
+  display: flex;
+  gap: 9px;
+  margin-top: 1.5rem;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.modal-footer-left { margin-right: auto; }
+
+.btn-cancel {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 9px 18px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text3);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.btn-cancel:hover { border-color: var(--border2); color: var(--text2); }
+
+.btn-save {
+  background: var(--accent);
+  color: #0A0A0F;
+  border: none;
+  border-radius: var(--r);
+  padding: 9px 22px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.04em;
+  transition: background 0.15s;
+}
+.btn-save:hover { background: var(--accent2); }
+
+.btn-delete {
+  background: var(--exp-bg);
+  color: var(--exp);
+  border: 1px solid #FF6B6B30;
+  border-radius: var(--r);
+  padding: 9px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.btn-delete:hover { background: #FF6B6B25; border-color: #FF6B6B50; }
+
+select {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg4);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  appearance: none; 
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+select:focus { border-color: var(--accent); }
+
+.confirm-desc {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.confirm-preview {
+  background: var(--bg4);
+  border-radius: var(--r);
+  padding: 0.875rem;
+  font-size: 13px;
+  color: var(--text2);
+}
+.confirm-preview strong { color: var(--text); }
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text3);
+  font-size: 13px;
+}
+.empty-icon {
+  font-size: 30px;
+  margin-bottom: 10px;
+  opacity: 0.4;
+}
+
+
+/* ===== Receipt scanner + subscriptions ===== */
+.scan-preview {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: var(--r);
+  background: var(--bg3);
+  margin-bottom: 0.75rem;
+}
+.scan-status {
+  font-size: 12px;
+  color: var(--text3);
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg4);
+  color: var(--text);
+  border: 1px solid var(--border2);
+  padding: 10px 18px;
+  border-radius: var(--r);
+  font-size: 13px;
+  z-index: 2000;
+}
+
+/* ===== Scan & Pay (UPI QR) ===== */
+.qr-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: 300px;
+  background: #000;
+  border-radius: var(--r2);
+  overflow: hidden;
+  border: 1px solid var(--border2);
+  margin-bottom: 0.75rem;
+}
+.qr-frame video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.qr-aim {
+  position: absolute;
+  inset: 18%;
+  border: 2px solid var(--accent);
+  border-radius: 14px;
+  box-shadow: 0 0 0 999px #0000008c;
+  pointer-events: none;
+}
+.qr-idle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text2);
+}
+.pay-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+.pay-row:last-of-type { border-bottom: none; }
+.pay-row span:first-child { color: var(--text3); }
+.pay-row span:last-child  { color: var(--text); text-align: right; word-break: break-all; }
+.pay-warn {
+  font-size: 12px;
+  color: var(--exp);
+  margin: -0.25rem 0 0.75rem;
+  display: none;
+}
+.pay-note {
+  font-size: 12px;
+  color: var(--text2);
+  background: var(--accent-dim);
+  border-radius: var(--r);
+  padding: 0.75rem;
+  line-height: 1.5;
+  margin-bottom: 0.75rem;
+  display: none;
+}
+.field input[readonly] { opacity: 0.7; cursor: not-allowed; }
+.pay-ok-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--inc-bg);
+  color: var(--inc);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  margin: 0.25rem auto 0.75rem;
+}
+.pay-ok-amt { text-align: center; font-size: 30px; font-weight: 600; color: var(--text); }
+.pay-ok-sub { text-align: center; font-size: 13px; color: var(--text2); margin: 4px 0 1rem; }
+#pay-pin, #pay-pin2 { letter-spacing: 0.6em; text-align: center; font-size: 20px; }
+.upload-link {
+  display: inline-block;
+  font-size: 12px;
+  color: var(--accent);
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <div class="screen active" id="auth-screen">
+    <div class="auth-wrap">
+
+      <div class="auth-glow"></div>
+      <div class="auth-card">
+
+        <div class="auth-wordmark">
+          <div class="logo-text">Finio<span class="logo-dot">.</span></div>
+          <p>Personal finance, simplified</p>
+        </div>
+
+        <div class="auth-box">
+          <div id="f-signup-row" class="field" style="display: none;">
+            <label>Full name</label>
+            <input type="text" id="f-name" placeholder="Alex Johnson" />
+          </div>
+
+          <div class="field">
+            <label>Email address</label>
+            <input type="email" id="f-email" placeholder="you@email.com" />
+          </div>
+
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="f-pass" placeholder="••••••••" />
+            <!-- Error message shown if login fails -->
+            <div class="err-msg" id="f-err"></div>
+          </div>
+          <button class="btn-auth" id="f-btn" onclick="handleAuth()">Sign in</button>
+          <div class="auth-toggle" id="f-toggle">
+            No account? <a onclick="toggleMode()">Create one free</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="main-screen">
+
+    <div class="topbar">
+      <div class="topbar-logo">Finio<span>.</span></div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="avatar" id="av"></div>
+          <span id="uname">–</span>
+        </div>
+        <button class="btn-signout" onclick="logout()">Sign out</button>
+      </div>
+    </div>
+
+    <div class="main-layout">
+
+      <div class="sidebar">
+
+        <div class="nav-section-label">Menu</div>
+
+        <div class="nav-item active" id="n-dash" onclick="goPage('dashboard', this)">
+          <svg viewBox="0 0 14 14" width="13" fill="none">
+            <rect x="1" y="1" width="5" height="5" rx="1.5" fill="currentColor" opacity=".9"/>
+            <rect x="8" y="1" width="5" height="5" rx="1.5" fill="currentColor" opacity=".5"/>
+            <rect x="1" y="8" width="5" height="5" rx="1.5" fill="currentColor" opacity=".5"/>
+            <rect x="8" y="8" width="5" height="5" rx="1.5" fill="currentColor" opacity=".9"/>
+          </svg>
+          Dashboard
+        </div>
+
+        <div class="nav-item" id="n-acc" onclick="goPage('accounts', this)">
+          <svg viewBox="0 0 14 14" width="13" fill="none">
+            <rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <line x1="1" y1="6.5" x2="13" y2="6.5" stroke="currentColor" stroke-width="1.2"/>
+            <rect x="3" y="8.5" width="3" height="1.2" rx="0.5" fill="currentColor" opacity=".6"/>
+          </svg>
+          Accounts
+        </div>
+
+        <div class="nav-item" id="n-hist" onclick="goPage('history', this)">
+          <svg viewBox="0 0 14 14" width="13" fill="none">
+            <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M7 4v3.5l1.8 1.3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          History
+        </div>
+        <div class="nav-item" id="n-subs" onclick="goPage('subscriptions', this)">
+          <svg viewBox="0 0 14 14" width="13" fill="none">
+            <path d="M2 7a5 5 0 0 1 8.5-3.5L12 5M12 7a5 5 0 0 1-8.5 3.5L2 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M12 2v3H9M2 12V9h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Subscriptions
+        </div>
+        <div class="nav-divider"></div>
+        <div class="nav-section-label">My Accounts</div>
+        <div id="sb-accs"></div>
+      </div>
+      <div class="content">
+        <div class="page active" id="page-dashboard">
+          <div class="page-header">
+            <div>
+              <div class="page-title">Overview</div>
+              <div class="page-sub" id="dash-date"></div>
+              <!-- JS fills in today's date -->
+            </div>
+            <div class="hdr-btns">
+              <button class="btn-back" onclick="openScanModal()">📷 Scan receipt</button>
+              <button class="btn-back" onclick="openPayModal()">📲 Scan &amp; Pay</button>
+              <button class="btn-new" onclick="openTxnModal(null)">
+                <svg viewBox="0 0 12 12" fill="none">
+                  <line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                New transaction
+              </button>
+            </div>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric">
+              <div class="metric-label">Net worth</div>
+              <div class="metric-val" id="m-bal">₹0</div>
+      
+              <div class="sparkline" id="spark"></div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Income · this month</div>
+              <div class="metric-val g" id="m-inc">₹0</div>
+              <div class="metric-badge up" id="inc-badge">↑ this month</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Expenses · this month</div>
+              <div class="metric-val r" id="m-exp">₹0</div>
+              <div class="metric-badge dn" id="exp-badge">↓ this month</div>
+            </div>
+          </div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Net savings</div>
+              </div>
+              <div class="net-display">
+                <div class="net-val" id="net-val">₹0</div>
+              </div>
+              <div class="chart-wrap" id="month-chart"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Spending by category</div>
+              </div>
+              <div id="cat-breakdown"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recent transactions</div>
+              <div class="card-action" onclick="goPage('history', document.getElementById('n-hist'))">
+                View all →
+              </div>
+            </div>
+            <!-- JS injects transaction rows here -->
+            <div id="recent-list"></div>
+          </div>
+        </div>
+        <div class="page" id="page-accounts">
+
+          <div class="page-header">
+            <div>
+              <div class="page-title">Accounts</div>
+              <div class="page-sub" id="acc-sub">Click an account to see its transactions</div>
+            </div>
+            <button class="btn-new" onclick="openAccModal()">
+              <svg viewBox="0 0 12 12" fill="none">
+                <line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              New account
+            </button>
+          </div>
+          <div class="acc-grid" id="acc-grid"></div>
+
+        </div>
+
+        <div class="page" id="page-acc-detail">
+
+          <div class="page-header">
+            <div>
+              <div class="page-title" id="detail-title">Account</div>
+              <div class="page-sub" id="detail-sub"></div>
+            </div>
+            <div class="hdr-btns">
+              <button class="btn-back" onclick="goPage('accounts', document.getElementById('n-acc'))">
+                ← All accounts
+              </button>
+              <button class="btn-new" onclick="openTxnModal(null)">
+                <svg viewBox="0 0 12 12" fill="none">
+                  <line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Add transaction
+              </button>
+            </div>
+          </div>
+
+          <div id="acc-detail-content"></div>
+
+        </div>
+     
+        <div class="page" id="page-subscriptions">
+          <div class="page-header">
+            <div>
+              <div class="page-title">Subscriptions</div>
+              <div class="page-sub" id="subs-sub">Recurring payments are deducted automatically</div>
+            </div>
+            <button class="btn-new" onclick="openSubModal()">+ New subscription</button>
+          </div>
+          <div class="card">
+            <div id="subs-list"></div>
+          </div>
+        </div>
+
+        <div class="page" id="page-history">
+
+          <div class="page-header">
+            <div>
+              <div class="page-title">History</div>
+              <div class="page-sub">Hover any row to edit or delete</div>
+            </div>
+            <button class="btn-new" onclick="openTxnModal(null)">
+              <svg viewBox="0 0 12 12" fill="none">
+                <line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Add
+            </button>
+          </div>
+          <div class="filter-row">
+            <button class="f-btn active" onclick="filt('all', this)">All</button>
+            <button class="f-btn" onclick="filt('income', this)">Income</button>
+            <button class="f-btn" onclick="filt('expense', this)">Expenses</button>
+            <button class="f-btn" onclick="filt('Food', this)">Food</button>
+            <button class="f-btn" onclick="filt('Travel', this)">Travel</button>
+            <button class="f-btn" onclick="filt('Rent', this)">Rent</button>
+            <button class="f-btn" onclick="filt('Shopping', this)">Shopping</button>
+            <button class="f-btn" onclick="filt('Health', this)">Health</button>
+          </div>
+          <div class="card">
+            <div id="hist-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="txn-modal">
+  <div class="modal">
+    <div class="modal-title" id="txn-modal-title">Add transaction</div>
+    <div class="type-seg">
+      <button class="seg-btn active i" id="seg-i" onclick="setTType('income')">Income</button>
+      <button class="seg-btn e"        id="seg-e" onclick="setTType('expense')">Expense</button>
+    </div>
+
+    <div class="field">
+      <label>Description</label>
+      <input type="text" id="t-desc" placeholder="e.g. Salary, Grocery, Netflix…" />
+    </div>
+
+    <div class="field">
+      <label>Amount (₹)</label>
+      <input type="number" id="t-amt" placeholder="0" min="0" />
+    </div>
+    <div class="field" id="t-cat-wrap" style="display: none;">
+      <label>Category</label>
+      <select id="t-cat">
+        <option>Food</option>
+        <option>Travel</option>
+        <option>Rent</option>
+        <option>Shopping</option>
+        <option>Health</option>
+        <option>Entertainment</option>
+        <option>Utilities</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Account</label>
+      <select id="t-acc"></select>
+    </div>
+
+    <div class="modal-footer">
+      <div class="modal-footer-left">
+        <button class="btn-delete" id="txn-delete-btn" style="display: none;" onclick="deleteTxnFromModal()">
+          Delete
+        </button>
+      </div>
+      <button class="btn-cancel" onclick="closeModal('txn-modal')">Cancel</button>
+      <button class="btn-save" id="txn-save-btn" onclick="saveTxn()">Save transaction</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="acc-modal">
+  <div class="modal">
+    <div class="modal-title">New account</div>
+
+    <div class="field">
+      <label>Account name</label>
+      <input type="text" id="a-name" placeholder="e.g. HDFC Savings, Paytm…" />
+    </div>
+
+    <div class="field">
+      <label>Type</label>
+      <select id="a-type">
+        <option value="Bank">Bank account</option>
+        <option value="Wallet">Digital wallet</option>
+        <option value="Savings">Savings</option>
+        <option value="Cash">Cash</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Opening balance (₹)</label>
+      <input type="number" id="a-bal" placeholder="0" min="0" value="0" />
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('acc-modal')">Cancel</button>
+      <button class="btn-save" onclick="saveAcc()">Create account</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="confirm-modal">
+  <div class="modal">
+    <div class="modal-title" style="color: var(--exp);">Delete transaction?</div>
+    <p class="confirm-desc">
+      This cannot be undone. The account balance will be adjusted automatically.
+    </p>
+    <div class="confirm-preview" id="confirm-preview"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn-delete" onclick="confirmDelete()">Yes, delete it</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="scan-modal">
+  <div class="modal">
+    <div class="modal-title">Scan receipt</div>
+    <div class="field">
+      <label>Photo of bill or receipt</label>
+      <input type="file" id="s-file" accept="image/*" onchange="handleReceiptFile(this)" />
+    </div>
+    <img id="s-preview" class="scan-preview" alt="Receipt preview" style="display:none;" />
+    <div class="scan-status" id="s-status"></div>
+    <div id="s-fields" style="display:none;">
+      <div class="field"><label>Description</label><input type="text" id="s-desc" /></div>
+      <div class="field"><label>Amount (₹)</label><input type="number" id="s-amt" min="0" /></div>
+      <div class="field">
+        <label>Category</label>
+        <select id="s-cat">
+          <option>Food</option><option>Travel</option><option>Rent</option><option>Shopping</option>
+          <option>Health</option><option>Entertainment</option><option>Utilities</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Account</label><select id="s-acc"></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('scan-modal')">Cancel</button>
+      <button class="btn-save" id="s-save" onclick="saveScan()" disabled>Add expense</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="sub-modal">
+  <div class="modal">
+    <div class="modal-title">New subscription</div>
+    <div class="field">
+      <label>Name</label>
+      <input type="text" id="sb-name" list="sub-presets" placeholder="e.g. Netflix, Spotify…" />
+      <datalist id="sub-presets">
+        <option value="Netflix"><option value="Spotify"><option value="Amazon Prime">
+        <option value="YouTube Premium"><option value="Disney+ Hotstar"><option value="iCloud">
+      </datalist>
+    </div>
+    <div class="field"><label>Monthly amount (₹)</label><input type="number" id="sb-amt" min="0" placeholder="199" /></div>
+    <div class="field">
+      <label>Category</label>
+      <select id="sb-cat">
+        <option>Entertainment</option><option>Utilities</option><option>Health</option>
+        <option>Shopping</option><option>Other</option>
+      </select>
+    </div>
+    <div class="field"><label>Pay from account</label><select id="sb-acc"></select></div>
+    <div class="field">
+      <label>Next charge date</label>
+      <input type="date" id="sb-date" />
+      <div class="scan-status">Today or a past date is charged right away. Pick a future date if this month is already paid.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('sub-modal')">Cancel</button>
+      <button class="btn-save" onclick="saveSub()">Add subscription</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="pay-modal">
+  <div class="modal">
+    <div class="modal-title">Scan &amp; Pay</div>
+
+    <!-- Step 1: scan -->
+    <div id="pay-step-scan">
+      <div class="qr-frame">
+        <video id="pay-video" playsinline muted style="display:none;"></video>
+        <div class="qr-aim" id="pay-aim" style="display:none;"></div>
+        <div class="qr-idle" id="pay-idle">Starting camera…</div>
+      </div>
+      <div class="scan-status" id="pay-status">Point the camera at any UPI QR code — a shop's QR, a person's, or a bill.</div>
+      <label class="upload-link" for="pay-file">Or choose a QR image from your gallery</label>
+      <input type="file" id="pay-file" accept="image/*" style="display:none;" onchange="handleQrImage(this)" />
+    </div>
+
+    <!-- Step 2: confirm -->
+    <div id="pay-step-confirm" style="display:none;">
+      <div class="pay-row"><span>Paying</span><span id="pay-payee">–</span></div>
+      <div class="pay-row"><span>UPI ID</span><span id="pay-vpa">–</span></div>
+      <div class="pay-row" id="pay-note-row"><span>Note</span><span id="pay-tn">–</span></div>
+
+      <div class="field" style="margin-top: 0.75rem;">
+        <label>Amount (₹)</label>
+        <input type="number" id="pay-amt" min="1" step="0.01" placeholder="Enter amount" oninput="updatePayCheck()" />
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select id="pay-cat">
+          <option>Food</option><option>Travel</option><option>Rent</option><option>Shopping</option>
+          <option>Health</option><option>Entertainment</option><option>Utilities</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Pay from account</label>
+        <select id="pay-acc" onchange="updatePayCheck()"></select>
+      </div>
+      <div class="pay-warn" id="pay-warn"></div>
+      <div class="pay-note" id="pay-after"></div>
+      <div class="scan-status">Paying from Finio updates your Finio balance only. To actually send money to this payee, use a UPI app.</div>
+      <div class="upload-link" id="pay-upi-link" onclick="startUpiHandoff()">Pay with a UPI app instead</div>
+    </div>
+
+    <!-- Step 3: PIN -->
+    <div id="pay-step-pin" style="display:none;">
+      <div class="pay-row"><span>Paying</span><span id="pay-pin-summary">–</span></div>
+      <div class="field" style="margin-top: 0.75rem;">
+        <label id="pay-pin-label">Finio PIN</label>
+        <input type="password" id="pay-pin" inputmode="numeric" maxlength="4" autocomplete="off"
+               placeholder="••••" oninput="this.value=this.value.replace(/\D/g,'')" />
+      </div>
+      <div class="field" id="pay-pin2-wrap" style="display:none;">
+        <label>Confirm PIN</label>
+        <input type="password" id="pay-pin2" inputmode="numeric" maxlength="4" autocomplete="off"
+               placeholder="••••" oninput="this.value=this.value.replace(/\D/g,'')" />
+      </div>
+      <div class="pay-warn" id="pay-pin-err"></div>
+      <div class="upload-link" id="pay-pin-forgot" onclick="resetPayPin()">Forgot PIN?</div>
+    </div>
+
+    <!-- Step 4: receipt -->
+    <div id="pay-step-success" style="display:none;">
+      <div class="pay-ok-icon">✓</div>
+      <div class="pay-ok-amt" id="pay-ok-amt">₹0</div>
+      <div class="pay-ok-sub" id="pay-ok-to">Paid</div>
+      <div class="pay-row"><span>UPI ID</span><span id="pay-ok-vpa">–</span></div>
+      <div class="pay-row"><span>From</span><span id="pay-ok-from">–</span></div>
+      <div class="pay-row"><span>Reference</span><span id="pay-ok-ref">–</span></div>
+      <div class="pay-row"><span>Time</span><span id="pay-ok-time">–</span></div>
+      <div class="scan-status" style="margin-top: 0.75rem;">Deducted from your Finio balance. This is an in-app payment — no bank transfer was made. To pay this payee for real, use "Pay with a UPI app".</div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" id="pay-btn-back" onclick="payBackOrCancel()">Cancel</button>
+      <button class="btn-save" id="pay-btn-main" onclick="payMainAction()" style="display:none;">Pay with UPI app</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const ACCOUNT_COLORS = ['#C8F55A', '#4FFFB0', '#FF6B6B', '#60A5FA', '#F59E0B', '#C084FC'];
+
+const TYPE_TEXT_COLOR = {
+  Bank:    '#60A5FA',
+  Wallet:  '#4FFFB0',
+  Savings: '#C8F55A',
+  Cash:    '#F59E0B'
+};
+
+const TYPE_BG_COLOR = {
+  Bank:    '#60A5FA15',
+  Wallet:  '#4FFFB015',
+  Savings: '#C8F55A15',
+  Cash:    '#F59E0B15'
+};
+
+const CATEGORY_ICON = {
+  Food:          '🍜',
+  Travel:        '✈️',
+  Rent:          '🏠',
+  Shopping:      '🛍️',
+  Health:        '💊',
+  Entertainment: '🎬',
+  Utilities:     '⚡',
+  Other:         '📦',
+  Income:        '💸'
+};
+
+let appState = {
+  users:           {},     // all registered users, keyed by email
+  currentUser:     null,   // email of whoever is logged in right now
+  isSignup:        false,  // true = sign-up mode, false = sign-in mode
+  txnType:         'income',  // which tab is active in the transaction modal
+  editingId:       null,   // id of the transaction being edited (null = new)
+  pendingDeleteId: null,   // id of the transaction waiting to be confirmed for delete
+  viewingAccId:    null,   // id of the account whose detail page is open
+  histFilter:      'all'   // current filter on the history page
+};
+
+function saveToStorage() {
+  try { localStorage.setItem('finio_users', JSON.stringify(appState.users)); }
+  catch (e) { /* storage blocked (e.g. some preview panes) — app still works for this session */ }
+}
+
+function loadFromStorage() {
+  try {
+    const saved = localStorage.getItem('finio_users');
+    if (saved) appState.users = JSON.parse(saved);
+  } catch (e) { /* storage blocked — start empty */ }
+}
+
+loadFromStorage();
+
+function getUser() {
+  return appState.users[appState.currentUser];
+}
+
+function formatMoney(amount) {
+  return '₹' + Math.abs(amount).toLocaleString('en-IN');
+}
+
+function getMonthlyTotal(type, accountId) {
+  const now         = new Date();
+  const thisMonth   = now.getMonth();
+  const thisYear    = now.getFullYear();
+
+  return getUser().transactions
+    .filter(function(txn) {
+      const parts   = txn.date.split('/');
+      const txnDate = new Date(parts[2], parts[1] - 1, parts[0]);
+
+      const isThisMonth   = txnDate.getMonth() === thisMonth && txnDate.getFullYear() === thisYear;
+      const isCorrectType = txn.type === type;
+      const isThisAccount = !accountId || txn.accountId === accountId;
+
+      return isThisMonth && isCorrectType && isThisAccount;
+    })
+    .reduce(function(sum, txn) { return sum + txn.amount; }, 0);
+}
+
+function handleAuth() {
+  const email    = document.getElementById('f-email').value.trim();
+  const password = document.getElementById('f-pass').value;
+
+  if (!email || !password) {
+    showAuthError('Please fill all fields.');
+    return;
+  }
+
+  if (appState.isSignup) {
+    const name = document.getElementById('f-name').value.trim();
+    if (!name) { showAuthError('Enter your name.'); return; }
+    if (appState.users[email]) { showAuthError('Account already exists. Sign in instead.'); return; }
+
+    appState.users[email] = {
+      name:         name,
+      email:        email,
+      password:     password,
+      accounts:     [],    
+      transactions: []     
+    };
+
+    appState.currentUser = email;
+
+  } else {
+    const user = appState.users[email];
+    if (!user || user.password !== password) {
+      showAuthError('Invalid email or password.');
+      return;
+    }
+    appState.currentUser = email;
+  }
+
+  saveToStorage();
+
+  document.getElementById('f-err').style.display = 'none';
+  launchApp();
+}
+
+function showAuthError(message) {
+  const el = document.getElementById('f-err');
+  el.textContent = message;
+  el.style.display = 'block';
+}
+
+function toggleMode() {
+  appState.isSignup = !appState.isSignup;
+
+  document.getElementById('f-signup-row').style.display = appState.isSignup ? 'block' : 'none';
+  document.getElementById('f-btn').textContent = appState.isSignup ? 'Create account' : 'Sign in';
+  document.getElementById('f-toggle').innerHTML = appState.isSignup
+    ? 'Have an account? <a onclick="toggleMode()">Sign in</a>'
+    : 'No account? <a onclick="toggleMode()">Create one free</a>';
+
+  document.getElementById('f-err').style.display = 'none';
+}
+
+function launchApp() {
+  document.getElementById('auth-screen').classList.remove('active');
+  document.getElementById('main-screen').classList.add('active');
+
+  const user     = getUser();
+  const initials = user.name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+  document.getElementById('av').textContent    = initials;
+  document.getElementById('uname').textContent = user.name.split(' ')[0];
+
+  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('en-IN', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  processSubscriptions();
+  renderAll();
+}
+
+function logout() {
+  appState.currentUser = null;
+  document.getElementById('main-screen').classList.remove('active');
+  document.getElementById('auth-screen').classList.add('active');
+  document.getElementById('f-email').value = '';
+  document.getElementById('f-pass').value  = '';
+  document.getElementById('f-err').style.display = 'none';
+}
+
+function goPage(pageId, navElement) {
+  // Update active nav item
+  document.querySelectorAll('.nav-item').forEach(function(item) {
+    item.classList.remove('active');
+  });
+  if (navElement) navElement.classList.add('active');
+
+  document.querySelectorAll('.page').forEach(function(page) {
+    page.classList.remove('active');
+  });
+  document.getElementById('page-' + pageId).classList.add('active');
+
+  if (pageId === 'dashboard')  renderDashboard();
+  if (pageId === 'accounts')   { appState.viewingAccId = null; renderAccounts(); renderSidebar(); }
+  if (pageId === 'history')    renderHistory(appState.histFilter);
+  if (pageId === 'subscriptions') renderSubscriptions();
+  if (pageId === 'acc-detail') renderAccountDetail();
+}
+
+function renderAll() {
+  renderDashboard();
+  renderAccounts();
+  renderSidebar();
+  renderHistory(appState.histFilter);
+  renderSubscriptions();
+}
+
+function renderSidebar() {
+  const user = getUser();
+
+  if (user.accounts.length === 0) {
+    document.getElementById('sb-accs').innerHTML =
+      '<div style="padding: 6px 1.25rem; font-size: 11px; color: var(--text3);">No accounts yet</div>';
+    return;
+  }
+
+  const html = user.accounts.map(function(account) {
+    const isActive = appState.viewingAccId === account.id ? 'active-acc' : '';
+    return `
+      <div class="nav-acc-item ${isActive}" onclick="openAccountDetail('${account.id}')">
+        <span style="display: flex; align-items: center; gap: 8px;">
+          <span class="acc-dot" style="background: ${account.color};"></span>
+          ${account.name}
+        </span>
+        <span style="font-size: 11px;">${formatMoney(account.balance)}</span>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('sb-accs').innerHTML = html;
+}
+
+function renderDashboard() {
+  const user = getUser();
+
+  const totalBalance   = user.accounts.reduce(function(sum, a) { return sum + a.balance; }, 0);
+  const monthlyIncome  = getMonthlyTotal('income');
+  const monthlyExpense = getMonthlyTotal('expense');
+  const netSavings     = monthlyIncome - monthlyExpense;
+
+  document.getElementById('m-bal').textContent = formatMoney(totalBalance);
+  document.getElementById('m-inc').textContent = formatMoney(monthlyIncome);
+  document.getElementById('m-exp').textContent = formatMoney(monthlyExpense);
+  document.getElementById('inc-badge').textContent = '↑ ' + formatMoney(monthlyIncome);
+  document.getElementById('exp-badge').textContent = '↓ ' + formatMoney(monthlyExpense);
+
+  const netEl = document.getElementById('net-val');
+  netEl.textContent = (netSavings >= 0 ? '+' : '-') + formatMoney(netSavings);
+  netEl.className   = 'net-val ' + (netSavings >= 0 ? 'pos' : 'neg');
+
+  document.getElementById('spark').innerHTML = [1,2,3,4,5,6].map(function(i) {
+    return '<div class="spark-dot' + (i === 6 ? ' hi' : '') + '"></div>';
+  }).join('');
+
+  const maxValue  = Math.max(monthlyIncome, monthlyExpense, 1);
+  const incHeight = Math.round((monthlyIncome  / maxValue) * 56) + 8;
+  const expHeight = Math.round((monthlyExpense / maxValue) * 56) + 8;
+
+  document.getElementById('month-chart').innerHTML = `
+    <div class="chart-col">
+      <div class="chart-bar" style="height: ${incHeight}px; background: #4FFFB030; border-top: 2px solid var(--inc);"></div>
+      <div class="chart-label">Inc</div>
+    </div>
+    <div class="chart-col">
+      <div class="chart-bar" style="height: ${expHeight}px; background: #FF6B6B25; border-top: 2px solid var(--exp);"></div>
+      <div class="chart-label">Exp</div>
+    </div>
+  `;
+
+  const categoryTotals = {};
+  user.transactions
+    .filter(function(txn) { return txn.type === 'expense'; })
+    .forEach(function(txn) {
+      categoryTotals[txn.category] = (categoryTotals[txn.category] || 0) + txn.amount;
+    });
+
+  const topCategories  = Object.entries(categoryTotals).sort(function(a,b) { return b[1]-a[1]; }).slice(0,5);
+  const totalForPercent = Object.values(categoryTotals).reduce(function(s,v) { return s+v; }, 1);
+
+  if (topCategories.length > 0) {
+    document.getElementById('cat-breakdown').innerHTML = topCategories.map(function(entry) {
+      const cat = entry[0], amt = entry[1];
+      const pct = Math.round((amt / totalForPercent) * 100);
+      return `
+        <div style="margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <span style="font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 6px;">
+              <span>${CATEGORY_ICON[cat] || '📦'}</span>${cat}
+            </span>
+            <span style="font-size: 11px; color: var(--text3); font-weight: 600;">${pct}%</span>
+          </div>
+          <div style="height: 3px; background: var(--bg4); border-radius: 2px;">
+            <div style="height: 3px; width: ${pct}%; background: var(--accent); border-radius: 2px; opacity: 0.65;"></div>
+          </div>
+        </div>`;
+    }).join('');
+  } else {
+    document.getElementById('cat-breakdown').innerHTML =
+      '<div class="empty"><div class="empty-icon">📊</div>No expenses yet</div>';
+  }
+
+  const recent = [...user.transactions].reverse().slice(0, 6);
+  document.getElementById('recent-list').innerHTML = recent.length > 0
+    ? recent.map(function(txn) { return buildTransactionRow(txn, false); }).join('')
+    : buildEmptyState('no-txns');
+}
+
+function buildEmptyState(context) {
+  if (context === 'no-accounts') {
+    return `<div class="empty">
+      <div class="empty-icon">🏦</div>
+      Start by adding an account — click <strong style="color:var(--accent)">New account</strong> above.
+    </div>`;
+  }
+  if (context === 'no-txns') {
+    return `<div class="empty">
+      <div class="empty-icon">💸</div>
+      No transactions yet — click <strong style="color:var(--accent)">New transaction</strong> to add your first one.
+    </div>`;
+  }
+  return '<div class="empty"><div class="empty-icon">📭</div>Nothing here yet</div>';
+}
+
+function buildTransactionRow(txn, showActions) {
+  const iconBg    = txn.type === 'income' ? 'var(--inc-bg)' : 'var(--exp-bg)';
+  const iconEmoji = CATEGORY_ICON[txn.type === 'income' ? 'Income' : txn.category] || '📦';
+  const account   = getUser().accounts.find(function(a) { return a.id === txn.accountId; });
+  const accName   = account ? account.name : '';
+  const sign      = txn.type === 'income' ? '+' : '-';
+
+  const editIcon = `<svg viewBox="0 0 12 12" width="11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5l2 2-6 6H2.5v-2l6-6z"/></svg>`;
+
+  const deleteIcon = `<svg viewBox="0 0 12 12" width="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 3h8M5 3V2h2v1M4 3v6h4V3"/><line x1="5" y1="5" x2="5" y2="8"/><line x1="7" y1="5" x2="7" y2="8"/></svg>`;
+
+  const actionsHtml = showActions
+    ? `<div class="txn-actions">
+        <button class="txn-btn"     onclick="openTxnModal('${txn.id}')"   title="Edit">${editIcon}</button>
+        <button class="txn-btn del" onclick="askDeleteTxn('${txn.id}')"  title="Delete">${deleteIcon}</button>
+       </div>`
+    : '';
+  return `
+    <div class="txn-row">
+      <div class="txn-icon" style="background: ${iconBg};">${iconEmoji}</div>
+      <div class="txn-info">
+        <div class="txn-name">${txn.description}</div>
+        <div class="txn-meta">
+          <span class="cat-pill">${txn.type === 'income' ? 'Income' : txn.category}</span>
+          ${accName ? ' · ' + accName : ''} · ${txn.date}
+        </div>
+      </div>
+      <div class="txn-right">
+        ${actionsHtml}
+        <div class="txn-amt ${txn.type === 'income' ? 'i' : 'e'}">${sign}${formatMoney(txn.amount)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAccounts() {
+  const user  = getUser();
+  const count = user.accounts.length;
+
+  document.getElementById('acc-sub').textContent = count > 0
+    ? count + ' account' + (count !== 1 ? 's' : '') + ' · click any to view transactions'
+    : 'Add your first account to get started';
+
+  if (count === 0) {
+    document.getElementById('acc-grid').innerHTML = `
+      <div class="add-acc-card" onclick="openAccModal()" style="grid-column: span 2; min-height: 200px;">
+        <div class="plus-icon" style="width:48px;height:48px;font-size:26px;">+</div>
+        <span style="font-size:14px;">Add your first account</span>
+        <span style="font-size:12px;color:var(--text3);margin-top:-4px;">e.g. your bank account or wallet</span>
+      </div>
+    `;
+    return;
+  }
+
+  const accountCards = user.accounts.map(function(account) {
+    const totalIncome  = user.transactions
+      .filter(function(t) { return t.accountId === account.id && t.type === 'income'; })
+      .reduce(function(s, t) { return s + t.amount; }, 0);
+
+    const totalExpense = user.transactions
+      .filter(function(t) { return t.accountId === account.id && t.type === 'expense'; })
+      .reduce(function(s, t) { return s + t.amount; }, 0);
+
+    const txnCount = user.transactions.filter(function(t) { return t.accountId === account.id; }).length;
+    const typeBg   = TYPE_BG_COLOR[account.type]   || '#ffffff10';
+    const typeText = TYPE_TEXT_COLOR[account.type]  || '#ffffff';
+
+    return `
+      <div class="acc-card" style="border-color: ${account.color}20;" onclick="openAccountDetail('${account.id}')">
+        <div class="acc-type-tag" style="background: ${typeBg}; color: ${typeText};">${account.type}</div>
+        <div class="acc-name">${account.name}</div>
+        <div class="acc-bal">${formatMoney(account.balance)}</div>
+        <div class="acc-bal-label">Current balance</div>
+        <div class="acc-stats-row">
+          <div class="acc-stat">
+            <div class="acc-stat-label">Income</div>
+            <div class="acc-stat-val" style="color: var(--inc);">${formatMoney(totalIncome)}</div>
+          </div>
+          <div class="acc-stat">
+            <div class="acc-stat-label">Expenses</div>
+            <div class="acc-stat-val" style="color: var(--exp);">${formatMoney(totalExpense)}</div>
+          </div>
+          <div class="acc-stat">
+            <div class="acc-stat-label">Txns</div>
+            <div class="acc-stat-val">${txnCount}</div>
+          </div>
+        </div>
+        <div style="position:absolute;top:-35px;right:-35px;width:100px;height:100px;border-radius:50%;background:${account.color};opacity:0.06;pointer-events:none;"></div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('acc-grid').innerHTML = accountCards + `
+    <div class="add-acc-card" onclick="openAccModal()">
+      <div class="plus-icon">+</div>
+      <span>Add account</span>
+    </div>
+  `;
+}
+
+function openAccountDetail(accountId) {
+  appState.viewingAccId = accountId;
+  renderSidebar();
+
+  document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('n-acc').classList.add('active');
+
+  document.querySelectorAll('.page').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('page-acc-detail').classList.add('active');
+
+  renderAccountDetail();
+}
+
+function renderAccountDetail() {
+  const user    = getUser();
+  const account = user.accounts.find(function(a) { return a.id === appState.viewingAccId; });
+  if (!account) return;
+
+  // All transactions for this account, newest first
+  const accountTxns  = [...user.transactions].filter(function(t) { return t.accountId === account.id; }).reverse();
+  const totalIncome  = accountTxns.filter(function(t) { return t.type === 'income'; }).reduce(function(s,t) { return s+t.amount; }, 0);
+  const totalExpense = accountTxns.filter(function(t) { return t.type === 'expense'; }).reduce(function(s,t) { return s+t.amount; }, 0);
+  const monthIncome  = getMonthlyTotal('income',  account.id);
+  const monthExpense = getMonthlyTotal('expense', account.id);
+  const monthNet     = monthIncome - monthExpense;
+
+  document.getElementById('detail-title').textContent = account.name;
+  document.getElementById('detail-sub').textContent   =
+    account.type + ' account · ' + accountTxns.length + ' transaction' + (accountTxns.length !== 1 ? 's' : '');
+
+  const typeBg   = TYPE_BG_COLOR[account.type]  || '#ffffff10';
+  const typeText = TYPE_TEXT_COLOR[account.type] || '#ffffff';
+
+  const txnListHtml = accountTxns.length > 0
+    ? accountTxns.map(function(txn) { return buildTransactionRow(txn, true); }).join('')
+    : `<div class="empty">
+        <div class="empty-icon">💸</div>
+        No transactions yet for this account.<br>
+        Click <strong style="color:var(--accent)">Add transaction</strong> above to record one.
+       </div>`;
+
+  document.getElementById('acc-detail-content').innerHTML = `
+    <div class="acc-detail-header">
+      <div class="acc-detail-glow" style="background: ${account.color};"></div>
+      <div class="acc-detail-type" style="background: ${typeBg}; color: ${typeText};">${account.type}</div>
+      <div class="acc-detail-name">${account.name}</div>
+      <div style="font-size:11px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;font-weight:600;margin-top:0.25rem;">Current balance</div>
+      <div class="acc-detail-bal">${formatMoney(account.balance)}</div>
+      <div class="acc-detail-stats">
+        <div class="ads"><div class="ads-label">Total income</div><div class="ads-val g">${formatMoney(totalIncome)}</div></div>
+        <div class="ads"><div class="ads-label">Total expenses</div><div class="ads-val r">${formatMoney(totalExpense)}</div></div>
+        <div class="ads"><div class="ads-label">This month net</div><div class="ads-val ${monthNet>=0?'g':'r'}">${monthNet>=0?'+':'-'}${formatMoney(monthNet)}</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">All transactions · ${account.name}</div>
+        <span style="font-size:11px;color:var(--text3);">${accountTxns.length} total</span>
+      </div>
+      ${txnListHtml}
+    </div>
+  `;
+}
+
+function renderHistory(filter) {
+  appState.histFilter = filter;
+
+  let transactions = [...getUser().transactions].reverse();
+
+  if (filter === 'income') {
+    transactions = transactions.filter(function(t) { return t.type === 'income'; });
+  } else if (filter === 'expense') {
+    transactions = transactions.filter(function(t) { return t.type === 'expense'; });
+  } else if (filter !== 'all') {
+    transactions = transactions.filter(function(t) { return t.category === filter; });
+  }
+
+  document.getElementById('hist-list').innerHTML = transactions.length > 0
+    ? transactions.map(function(txn) { return buildTransactionRow(txn, true); }).join('')
+    : `<div class="empty"><div class="empty-icon">🔍</div>No transactions found</div>`;
+}
+
+// Called when a filter pill is clicked
+function filt(filterValue, buttonElement) {
+  document.querySelectorAll('.f-btn').forEach(function(btn) { btn.classList.remove('active'); });
+  buttonElement.classList.add('active');
+  renderHistory(filterValue);
+}
+
+function openTxnModal(transactionId) {
+  const user = getUser();
+  appState.editingId = transactionId || null;
+
+  if (user.accounts.length === 0) {
+    alert('Please add an account first before recording transactions.');
+    return;
+  }
+
+  document.getElementById('t-acc').innerHTML = user.accounts.map(function(acc) {
+    return '<option value="' + acc.id + '">' + acc.name + '</option>';
+  }).join('');
+
+  const deleteBtn = document.getElementById('txn-delete-btn');
+  const saveBtn   = document.getElementById('txn-save-btn');
+  const titleEl   = document.getElementById('txn-modal-title');
+
+  if (transactionId) {
+    // ── EDIT MODE ──
+    const txn = user.transactions.find(function(t) { return t.id === transactionId; });
+    if (!txn) return;
+
+    titleEl.textContent     = 'Edit transaction';
+    saveBtn.textContent     = 'Save changes';
+    deleteBtn.style.display = 'block'; 
+
+    setTType(txn.type);
+    document.getElementById('t-desc').value = txn.description;
+    document.getElementById('t-amt').value  = txn.amount;
+    document.getElementById('t-acc').value  = txn.accountId;
+    if (txn.type === 'expense') {
+      document.getElementById('t-cat').value = txn.category;
+    }
+
+  } else {
+    titleEl.textContent     = 'Add transaction';
+    saveBtn.textContent     = 'Save transaction';
+    deleteBtn.style.display = 'none'; // hide Delete for new transactions
+
+    document.getElementById('t-desc').value = '';
+    document.getElementById('t-amt').value  = '';
+    setTType('income');
+  }
+
+  document.getElementById('txn-modal').classList.add('open');
+}
+
+function setTType(type) {
+  appState.txnType = type;
+  document.getElementById('seg-i').className = 'seg-btn ' + (type === 'income'  ? 'active i' : '');
+  document.getElementById('seg-e').className = 'seg-btn ' + (type === 'expense' ? 'active e' : '');
+  document.getElementById('t-cat-wrap').style.display = type === 'expense' ? 'block' : 'none';
+}
+
+function saveTxn() {
+  const description = document.getElementById('t-desc').value.trim();
+  const amount      = parseFloat(document.getElementById('t-amt').value);
+  const accountId   = document.getElementById('t-acc').value;
+
+  if (!description || !amount || amount <= 0) return;
+
+  const category = appState.txnType === 'income' ? 'Income' : document.getElementById('t-cat').value;
+  const user     = getUser();
+
+  if (appState.editingId) {
+    const existing = user.transactions.find(function(t) { return t.id === appState.editingId; });
+    if (!existing) return;
+
+    const oldAccount = user.accounts.find(function(a) { return a.id === existing.accountId; });
+    if (oldAccount) {
+      oldAccount.balance -= existing.type === 'income' ? existing.amount : -existing.amount;
+    }
+
+    existing.description = description;
+    existing.amount      = amount;
+    existing.type        = appState.txnType;
+    existing.category    = category;
+    existing.accountId   = accountId;
+
+    const newAccount = user.accounts.find(function(a) { return a.id === accountId; });
+    if (newAccount) {
+      newAccount.balance += appState.txnType === 'income' ? amount : -amount;
+    }
+
+  } else {
+    const newTxn = {
+      id:          'x' + Date.now(),
+      description: description,
+      amount:      amount,
+      type:        appState.txnType,
+      category:    category,
+      accountId:   accountId,
+      date:        new Date().toLocaleDateString('en-IN')
+    };
+    user.transactions.push(newTxn);
+
+    const account = user.accounts.find(function(a) { return a.id === accountId; });
+    if (account) {
+      account.balance += appState.txnType === 'income' ? amount : -amount;
+    }
+  }
+
+  saveToStorage();
+
+  closeModal('txn-modal');
+  renderAll();
+  if (appState.viewingAccId) renderAccountDetail();
+}
+
+function askDeleteTxn(transactionId) {
+  appState.pendingDeleteId = transactionId;
+  const txn = getUser().transactions.find(function(t) { return t.id === transactionId; });
+  if (!txn) return;
+
+  document.getElementById('confirm-preview').innerHTML =
+    '<strong>' + txn.description + '</strong>' +
+    ' &ensp;·&ensp; ' + (txn.type === 'income' ? '+' : '-') + formatMoney(txn.amount) +
+    ' &ensp;·&ensp; ' + txn.category +
+    ' &ensp;·&ensp; ' + txn.date;
+
+  document.getElementById('confirm-modal').classList.add('open');
+}
+
+function deleteTxnFromModal() {
+  const id = appState.editingId;
+  if (!id) return;
+  closeModal('txn-modal');
+  appState.pendingDeleteId = id;
+  const txn = getUser().transactions.find(function(t) { return t.id === id; });
+  document.getElementById('confirm-preview').innerHTML =
+    '<strong>' + txn.description + '</strong>' +
+    ' &ensp;·&ensp; ' + (txn.type === 'income' ? '+' : '-') + formatMoney(txn.amount) +
+    ' &ensp;·&ensp; ' + txn.category +
+    ' &ensp;·&ensp; ' + txn.date;
+  document.getElementById('confirm-modal').classList.add('open');
+}
+
+function confirmDelete() {
+  const id   = appState.pendingDeleteId;
+  if (!id) return;
+
+  const user = getUser();
+  const txn  = user.transactions.find(function(t) { return t.id === id; });
+
+  if (txn) {
+    const account = user.accounts.find(function(a) { return a.id === txn.accountId; });
+    if (account) {
+      account.balance -= txn.type === 'income' ? txn.amount : -txn.amount;
+    }
+    user.transactions = user.transactions.filter(function(t) { return t.id !== id; });
+  }
+
+  appState.pendingDeleteId = null;
+
+  saveToStorage();
+
+  closeModal('confirm-modal');
+  renderAll();
+  if (appState.viewingAccId) renderAccountDetail();
+}
+
+function openAccModal() {
+  document.getElementById('a-name').value = '';
+  document.getElementById('a-bal').value  = '0';
+  document.getElementById('acc-modal').classList.add('open');
+}
+
+function saveAcc() {
+  const name = document.getElementById('a-name').value.trim();
+  if (!name) return;
+
+  const user       = getUser();
+  const colorIndex = user.accounts.length % ACCOUNT_COLORS.length;
+
+  user.accounts.push({
+    id:      'a' + Date.now(),
+    name:    name,
+    type:    document.getElementById('a-type').value,
+    balance: parseFloat(document.getElementById('a-bal').value) || 0,
+    color:   ACCOUNT_COLORS[colorIndex]
+  });
+
+  saveToStorage();
+
+  closeModal('acc-modal');
+  renderAll();
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('open');
+}
+document.querySelectorAll('.modal-bg').forEach(function(backdrop) {
+  backdrop.addEventListener('click', function(event) {
+    if (event.target === backdrop) {
+      backdrop.classList.remove('open');
+    }
+  });
+});
+
+
+/* =====================================================================
+   SHARED HELPERS
+   ===================================================================== */
+
+// Adds a transaction AND updates the account balance (same rules as saveTxn)
+function addTransaction(description, amount, type, category, accountId, dateObj) {
+  const user = getUser();
+  user.transactions.push({
+    id:          'x' + Date.now() + Math.floor(Math.random() * 1000),
+    description: description,
+    amount:      amount,
+    type:        type,
+    category:    category,
+    accountId:   accountId,
+    date:        dateObj.toLocaleDateString('en-IN')
+  });
+  const account = user.accounts.find(function(a) { return a.id === accountId; });
+  if (account) account.balance += type === 'income' ? amount : -amount;
+}
+
+function showToast(message) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = message;
+  document.body.appendChild(el);
+  setTimeout(function() { el.remove(); }, 3500);
+}
+
+function accountOptions() {
+  return getUser().accounts.map(function(a) {
+    return '<option value="' + a.id + '">' + a.name + '</option>';
+  }).join('');
+}
+
+/* =====================================================================
+   FEATURE 1 — RECEIPT SCANNER (OCR runs in the browser via Tesseract.js)
+   ===================================================================== */
+
+const CATEGORY_KEYWORDS = {
+  Food:          /restaurant|cafe|coffee|pizza|burger|biryani|kitchen|bakery|sweets|dhaba|swiggy|zomato|food|grocer|mart|supermarket|dmart|bigbasket|dominos|kfc|mcdonald/i,
+  Health:        /pharma|medical|chemist|hospital|clinic|apollo|medplus|diagnostic|dental/i,
+  Travel:        /uber|ola\b|rapido|irctc|railway|petrol|fuel|diesel|indigo|airlines|metro|taxi|toll/i,
+  Shopping:      /mall|fashion|apparel|store|retail|lifestyle|myntra|amazon|flipkart|electronics|mobile/i,
+  Utilities:     /electricity|recharge|airtel|jio|vodafone|broadband|water bill|gas|bsnl/i,
+  Entertainment: /cinema|pvr|inox|movie|multiplex|bookmyshow|netflix|spotify/i,
+  Rent:          /\brent\b|landlord/i
+};
+
+function parseReceipt(text) {
+  const lines = text.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
+
+  // Merchant = first line near the top that looks like a name
+  let merchant = '';
+  for (const line of lines.slice(0, 6)) {
+    const letters = (line.match(/[A-Za-z]/g) || []).length;
+    if (letters >= 3 && !/invoice|receipt|bill|tax|gstin|welcome|cash memo|^tel|phone/i.test(line)) {
+      merchant = line; break;
+    }
+  }
+  merchant = merchant.replace(/[<>&"'`]/g, '').slice(0, 40);   // keep it safe for innerHTML
+
+  // Amount: look at "total"-style lines first
+  const NUM = /\d[\d,]*(?:\.\d{1,2})?/g;
+  const numsIn = function(s) {
+    return (s.match(NUM) || [])
+      .map(function(x) { return parseFloat(x.replace(/,/g, '')); })
+      .filter(function(n) { return n > 0 && n < 1000000; });
+  };
+  const strong = /grand\s*total|net\s*payable|amount\s*payable|bill\s*amount|total\s*amount|amount\s*due|total\s*due/i;
+  const weak   = /total|payable/i;
+  const skip   = /sub\s*-?\s*total|tax|gst|discount|saving|change|round|qty|items?/i;
+
+  function findAmount(test, useSkip) {
+    let found = [];
+    lines.forEach(function(line, i) {
+      if (!test.test(line) || (useSkip && skip.test(line))) return;
+      let n = numsIn(line);
+      if (n.length === 0 && lines[i + 1]) n = numsIn(lines[i + 1]);   // amount on next line
+      found = found.concat(n);
+    });
+    return found.length ? Math.max.apply(null, found) : 0;
+  }
+
+  let amount = findAmount(strong, false) || findAmount(weak, true);
+  if (!amount) {   // last resort: biggest number with decimals
+    const decimals = (text.match(/\d[\d,]*\.\d{2}/g) || [])
+      .map(function(x) { return parseFloat(x.replace(/,/g, '')); })
+      .filter(function(n) { return n < 1000000; });
+    amount = decimals.length ? Math.max.apply(null, decimals) : 0;
+  }
+
+  let category = 'Other';
+  for (const cat in CATEGORY_KEYWORDS) {
+    if (CATEGORY_KEYWORDS[cat].test(text)) { category = cat; break; }
+  }
+
+  return { merchant: merchant, amount: amount, category: category };
+}
+
+function openScanModal() {
+  if (getUser().accounts.length === 0) {
+    alert('Please add an account first before recording transactions.');
+    return;
+  }
+  document.getElementById('s-file').value = '';
+  document.getElementById('s-preview').style.display = 'none';
+  document.getElementById('s-fields').style.display  = 'none';
+  document.getElementById('s-status').textContent    = 'Upload a clear, flat, well-lit photo of the bill.';
+  document.getElementById('s-save').disabled = true;
+  document.getElementById('s-acc').innerHTML = accountOptions();
+  document.getElementById('scan-modal').classList.add('open');
+}
+
+// Loads the OCR library only when first needed, so a slow CDN can never block the app
+function loadTesseract() {
+  return new Promise(function(resolve, reject) {
+    if (typeof Tesseract !== 'undefined') { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+    s.onload  = resolve;
+    s.onerror = function() { reject(new Error('Could not load the OCR library — check your internet connection.')); };
+    document.head.appendChild(s);
+  });
+}
+
+async function handleReceiptFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const status  = document.getElementById('s-status');
+  const preview = document.getElementById('s-preview');
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+  document.getElementById('s-save').disabled = true;
+  status.textContent = 'Reading receipt…';
+
+  try {
+    status.textContent = 'Loading scanner…';
+    await loadTesseract();
+    const result = await Tesseract.recognize(file, 'eng', {
+      logger: function(m) {
+        if (m.status === 'recognizing text') {
+          status.textContent = 'Reading receipt… ' + Math.round(m.progress * 100) + '%';
+        }
+      }
+    });
+    const parsed = parseReceipt(result.data.text);
+
+    document.getElementById('s-desc').value = parsed.merchant || 'Receipt';
+    document.getElementById('s-amt').value  = parsed.amount || '';
+    document.getElementById('s-cat').value  = parsed.category;
+    status.textContent = parsed.amount
+      ? 'Check the details below — OCR can misread digits — then add the expense.'
+      : "Couldn't find a total. Please type the amount.";
+  } catch (err) {
+    status.textContent = (err.message || 'Could not read the image.') + ' You can still enter details manually.';
+  }
+
+  document.getElementById('s-fields').style.display = 'block';
+  document.getElementById('s-save').disabled = false;
+}
+
+function saveScan() {
+  const description = document.getElementById('s-desc').value.trim();
+  const amount      = parseFloat(document.getElementById('s-amt').value);
+  if (!description || !amount || amount <= 0) return;
+
+  addTransaction(description, amount, 'expense',
+    document.getElementById('s-cat').value,
+    document.getElementById('s-acc').value,
+    new Date());
+
+  saveToStorage();
+  closeModal('scan-modal');
+  renderAll();
+  if (appState.viewingAccId) renderAccountDetail();
+  showToast(formatMoney(amount) + ' deducted — ' + description);
+}
+
+/* =====================================================================
+   FEATURE 2 — MONTHLY SUBSCRIPTIONS
+   Each subscription stores `nextDue` (yyyy-mm-dd). Whenever the app opens,
+   processSubscriptions() charges every month that has come due since,
+   so nothing is missed even if the app wasn't opened on the billing day.
+   ===================================================================== */
+
+function getSubs() {
+  const user = getUser();
+  if (!user.subscriptions) user.subscriptions = [];   // older saved users won't have this yet
+  return user.subscriptions;
+}
+
+function toISO(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function parseISO(s) {
+  const p = s.split('-');
+  return new Date(+p[0], +p[1] - 1, +p[2]);
+}
+
+// Same billing day next month (clamped, so 31st → 28/29/30 in short months)
+function addOneMonth(date, billDay) {
+  const y = date.getFullYear();
+  const m = date.getMonth() + 1;
+  const lastDay = new Date(y, m + 1, 0).getDate();
+  return new Date(y, m, Math.min(billDay, lastDay));
+}
+
+function processSubscriptions() {
+  const user  = getUser();
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  let charged = 0;
+
+  getSubs().forEach(function(sub) {
+    if (!user.accounts.some(function(a) { return a.id === sub.accountId; })) return;  // account was removed
+    let due = parseISO(sub.nextDue);
+    while (due <= today) {
+      addTransaction(sub.name + ' (subscription)', sub.amount, 'expense', sub.category, sub.accountId, due);
+      charged++;
+      due = addOneMonth(due, sub.billDay);
+    }
+    sub.nextDue = toISO(due);
+  });
+
+  if (charged > 0) {
+    saveToStorage();
+    showToast(charged + ' subscription payment' + (charged !== 1 ? 's' : '') + ' deducted');
+  }
+}
+
+function openSubModal() {
+  if (getUser().accounts.length === 0) {
+    alert('Please add an account first.');
+    return;
+  }
+  document.getElementById('sb-name').value = '';
+  document.getElementById('sb-amt').value  = '';
+  document.getElementById('sb-date').value = toISO(new Date());
+  document.getElementById('sb-acc').innerHTML = accountOptions();
+  document.getElementById('sub-modal').classList.add('open');
+}
+
+function saveSub() {
+  const name   = document.getElementById('sb-name').value.trim().replace(/[<>&"'`]/g, '');
+  const amount = parseFloat(document.getElementById('sb-amt').value);
+  const date   = document.getElementById('sb-date').value;
+  if (!name || !amount || amount <= 0 || !date) return;
+
+  getSubs().push({
+    id:        's' + Date.now(),
+    name:      name,
+    amount:    amount,
+    category:  document.getElementById('sb-cat').value,
+    accountId: document.getElementById('sb-acc').value,
+    billDay:   parseISO(date).getDate(),
+    nextDue:   date
+  });
+
+  closeModal('sub-modal');
+  processSubscriptions();   // charges immediately if the date is today or earlier
+  saveToStorage();
+  renderAll();
+  if (appState.viewingAccId) renderAccountDetail();
+}
+
+function deleteSub(id) {
+  if (!confirm('Stop this subscription? Past payments stay in your history.')) return;
+  getUser().subscriptions = getSubs().filter(function(s) { return s.id !== id; });
+  saveToStorage();
+  renderSubscriptions();
+}
+
+function renderSubscriptions() {
+  const subs  = getSubs();
+  const total = subs.reduce(function(sum, s) { return sum + s.amount; }, 0);
+
+  document.getElementById('subs-sub').textContent = subs.length > 0
+    ? subs.length + ' active · ' + formatMoney(total) + ' per month'
+    : 'Recurring payments are deducted automatically';
+
+  if (subs.length === 0) {
+    document.getElementById('subs-list').innerHTML =
+      '<div class="empty"><div class="empty-icon">🔁</div>No subscriptions yet — add Netflix, Spotify or anything that renews monthly.</div>';
+    return;
+  }
+
+  const user = getUser();
+  document.getElementById('subs-list').innerHTML = subs.map(function(sub) {
+    const acc  = user.accounts.find(function(a) { return a.id === sub.accountId; });
+    const next = parseISO(sub.nextDue).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    return `
+      <div class="txn-row">
+        <div class="txn-icon" style="background: var(--exp-bg);">${CATEGORY_ICON[sub.category] || '🔁'}</div>
+        <div class="txn-info">
+          <div class="txn-name">${sub.name}</div>
+          <div class="txn-meta">${acc ? acc.name : 'Account removed'} · next charge ${next}</div>
+        </div>
+        <div class="txn-right">
+          <div class="txn-actions" style="opacity:1;">
+            <button class="txn-btn del" onclick="deleteSub('${sub.id}')" title="Stop subscription">✕</button>
+          </div>
+          <div class="txn-amt e">-${formatMoney(sub.amount)}<span style="color:var(--text3);font-size:11px;"> /mo</span></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* =====================================================================
+   FEATURE 3 — SCAN & PAY (real UPI QR codes)
+   1. Camera reads the QR (native BarcodeDetector, or jsQR as a fallback).
+   2. The upi://pay?... text inside the QR is parsed: payee, UPI ID, amount, note.
+   3. "Pay" hands the payment to the user's UPI app (GPay, PhonePe, Paytm…)
+      through the standard upi:// link — that app moves the money.
+   4. Once the user confirms it went through, Finio records the expense
+      and deducts it from the chosen account.
+   A browser page cannot move bank money by itself, so we never record the
+   expense until the user says the UPI payment actually completed.
+   ===================================================================== */
+
+const payState = {
+  stream:   null,    // camera stream
+  timer:    null,    // scan-loop timeout id
+  detector: null,    // BarcodeDetector instance (if supported)
+  params:   null,    // parsed upi:// query parameters, in original order
+  fixedAmt: false,   // true when the QR already carries an amount
+  launched: false,   // true once we've handed over to the UPI app
+  step:     'scan',  // scan | confirm | pin | success
+  pinSetup: false,   // true while the user is creating their PIN
+  tries:    0,       // wrong PIN attempts in this payment
+  lockUntil: 0       // timestamp until which PIN entry is locked
+};
+
+function loadJsQR() {
+  return new Promise(function(resolve, reject) {
+    if (typeof jsQR !== 'undefined') { resolve(); return; }
+    const sc = document.createElement('script');
+    sc.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
+    sc.onload  = resolve;
+    sc.onerror = function() { reject(new Error('Could not load the QR reader — check your internet connection.')); };
+    document.head.appendChild(sc);
+  });
+}
+
+// Reads a QR from a canvas. Returns the text, or null if no QR is visible.
+async function decodeQR(canvas) {
+  if ('BarcodeDetector' in window) {
+    try {
+      if (!payState.detector) payState.detector = new BarcodeDetector({ formats: ['qr_code'] });
+      const codes = await payState.detector.detect(canvas);
+      if (codes.length) return codes[0].rawValue;
+    } catch (e) { /* fall through to jsQR */ }
+  }
+  await loadJsQR();
+  const ctx  = canvas.getContext('2d', { willReadFrequently: true });
+  const img  = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const hit  = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+  return hit ? hit.data : null;
+}
+
+// Turns "upi://pay?pa=shop@bank&pn=Shop&am=120" into a clean object, or null if it isn't a UPI QR.
+function parseUPI(text) {
+  const raw = (text || '').trim();
+  if (!/^upi:\/\/pay\?/i.test(raw)) return null;
+
+  const pairs = raw.slice(raw.indexOf('?') + 1).split('&').map(function(kv) {
+    const i = kv.indexOf('=');
+    const k = (i < 0 ? kv : kv.slice(0, i)).toLowerCase();
+    let v   = i < 0 ? '' : kv.slice(i + 1);
+    try { v = decodeURIComponent(v.replace(/\+/g, ' ')); } catch (e) { /* keep raw */ }
+    return [k, v];
+  }).filter(function(pair) { return pair[0]; });
+
+  const get = function(k) {
+    const hit = pairs.find(function(pair) { return pair[0] === k; });
+    return hit ? hit[1] : '';
+  };
+
+  const vpa = get('pa').trim();
+  if (!/^[\w.\-]{2,}@[A-Za-z][\w.\-]{1,}$/.test(vpa)) return null;
+
+  const cur = get('cu');
+  if (cur && cur.toUpperCase() !== 'INR') return null;   // UPI is rupee-only
+
+  const amt = parseFloat(get('am'));
+  return {
+    pairs:  pairs,
+    vpa:    vpa,
+    name:   get('pn').replace(/[<>&"'`]/g, '').trim().slice(0, 40),
+    note:   get('tn').replace(/[<>&"'`]/g, '').trim().slice(0, 60),
+    amount: amt > 0 && amt < 10000000 ? amt : 0
+  };
+}
+
+// Rebuilds the upi:// link, keeping every original field (some merchant QRs carry extra ones)
+function buildUPILink(upi, amount) {
+  const out = upi.pairs.filter(function(pair) { return pair[0] !== 'am' && pair[0] !== 'cu'; });
+  out.push(['am', amount.toFixed(2)]);
+  out.push(['cu', 'INR']);
+  return 'upi://pay?' + out.map(function(pair) {
+    return pair[0] + '=' + encodeURIComponent(pair[1]).replace(/%40/g, '@');   // keep @ readable in the UPI ID
+  }).join('&');
+}
+
+function openPayModal() {
+  if (getUser().accounts.length === 0) {
+    alert('Please add an account first before making a payment.');
+    return;
+  }
+  document.getElementById('pay-acc').innerHTML = accountOptions();
+  document.getElementById('pay-modal').classList.add('open');
+  showPayStep('scan');
+  startCamera();
+}
+
+function showPayStep(step) {
+  payState.step = step;
+  ['scan', 'confirm', 'pin', 'success'].forEach(function(name) {
+    document.getElementById('pay-step-' + name).style.display = name === step ? 'block' : 'none';
+  });
+  const back = document.getElementById('pay-btn-back');
+  const main = document.getElementById('pay-btn-main');
+  back.style.display = step === 'success' ? 'none' : 'inline-block';
+  main.style.display = step === 'scan'    ? 'none' : 'inline-block';
+  main.disabled = false;
+  if (step === 'scan')    back.textContent = 'Cancel';
+  if (step === 'confirm') back.textContent = 'Scan again';
+  if (step === 'pin')   { back.textContent = 'Back'; main.textContent = 'Confirm payment'; }
+  if (step === 'success') main.textContent = 'Done';
+}
+
+function setPayStatus(msg) { document.getElementById('pay-status').textContent = msg; }
+
+async function startCamera() {
+  stopCamera();
+  const video = document.getElementById('pay-video');
+  const idle  = document.getElementById('pay-idle');
+  video.style.display = 'none';
+  document.getElementById('pay-aim').style.display = 'none';
+  idle.style.display = 'flex';
+  idle.textContent   = 'Starting camera…';
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    idle.textContent = 'Camera is not available here. Open Finio over https or on localhost, or choose a QR image below.';
+    return;
+  }
+  try {
+    payState.stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } }, audio: false
+    });
+  } catch (err) {
+    idle.textContent = 'Camera permission was blocked. Allow camera access in your browser, or choose a QR image below.';
+    return;
+  }
+
+  // The modal may have been closed while the permission prompt was open
+  if (!document.getElementById('pay-modal').classList.contains('open')) { stopCamera(); return; }
+
+  video.srcObject = payState.stream;
+  await video.play().catch(function() {});
+  video.style.display = 'block';
+  document.getElementById('pay-aim').style.display = 'block';
+  idle.style.display = 'none';
+  setPayStatus('Point the camera at any UPI QR code — a shop\'s QR, a person\'s, or a bill.');
+  scanLoop();
+}
+
+function stopCamera() {
+  clearTimeout(payState.timer);
+  payState.timer = null;
+  if (payState.stream) {
+    payState.stream.getTracks().forEach(function(t) { t.stop(); });
+    payState.stream = null;
+  }
+}
+
+// Grabs a frame a few times a second until a QR is found
+function scanLoop() {
+  const video  = document.getElementById('pay-video');
+  const canvas = document.createElement('canvas');
+  const ctx    = canvas.getContext('2d', { willReadFrequently: true });
+
+  async function tick() {
+    if (!payState.stream) return;
+    if (video.readyState >= 2 && video.videoWidth) {
+      const scale = Math.min(1, 720 / video.videoWidth);
+      canvas.width  = Math.round(video.videoWidth  * scale);
+      canvas.height = Math.round(video.videoHeight * scale);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      try {
+        const text = await decodeQR(canvas);
+        if (text) { handleQrText(text); return; }
+      } catch (err) {
+        setPayStatus((err.message || 'QR reader failed.') + ' You can choose a QR image instead.');
+        return;
+      }
+    }
+    payState.timer = setTimeout(tick, 220);
+  }
+  tick();
+}
+
+// Scan from a saved image (screenshot of a QR, gallery photo)
+async function handleQrImage(input) {
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+  setPayStatus('Reading QR image…');
+  try {
+    const bmp = await createImageBitmap(file);
+    const scale  = Math.min(1, 1400 / Math.max(bmp.width, bmp.height));
+    const canvas = document.createElement('canvas');
+    canvas.width  = Math.round(bmp.width  * scale);
+    canvas.height = Math.round(bmp.height * scale);
+    canvas.getContext('2d', { willReadFrequently: true }).drawImage(bmp, 0, 0, canvas.width, canvas.height);
+    const text = await decodeQR(canvas);
+    if (text) handleQrText(text);
+    else setPayStatus('No QR code found in that image. Try a clearer, closer picture.');
+  } catch (err) {
+    setPayStatus(err.message || 'Could not read that image.');
+  }
+}
+
+function handleQrText(text) {
+  const upi = parseUPI(text);
+  if (!upi) {
+    // Not a UPI payment QR (a website link, a Wi-Fi code, a non-UPI wallet…). Keep scanning.
+    setPayStatus('That QR is not a UPI payment code. Try a different one.');
+    if (payState.stream) payState.timer = setTimeout(scanLoop, 1200);
+    return;
+  }
+  stopCamera();
+  showPayConfirm(upi);
+}
+
+function showPayConfirm(upi) {
+  payState.params   = upi;
+  payState.fixedAmt = upi.amount > 0;
+  payState.launched = false;
+
+  document.getElementById('pay-payee').textContent = upi.name || 'Unnamed payee';
+  document.getElementById('pay-vpa').textContent   = upi.vpa;
+  document.getElementById('pay-tn').textContent    = upi.note;
+  document.getElementById('pay-note-row').style.display = upi.note ? 'flex' : 'none';
+
+  const amt = document.getElementById('pay-amt');
+  amt.value    = upi.amount || '';
+  amt.readOnly = payState.fixedAmt;
+
+  let cat = 'Other';
+  const hay = upi.name + ' ' + upi.note;
+  for (const c in CATEGORY_KEYWORDS) {
+    if (CATEGORY_KEYWORDS[c].test(hay)) { cat = c; break; }
+  }
+  document.getElementById('pay-cat').value = cat;
+
+  const after = document.getElementById('pay-after');
+  after.style.display = 'none';
+  after.textContent   = '';
+
+  document.getElementById('pay-upi-link').style.display = 'inline-block';
+  showPayStep('confirm');
+  updatePayCheck();
+}
+
+// Warns (but doesn't block) if the chosen account can't cover the amount
+// In-app payments can't overdraw: the button is disabled if the account can't cover the amount
+function updatePayCheck() {
+  const amount  = parseFloat(document.getElementById('pay-amt').value) || 0;
+  const account = getUser().accounts.find(function(a) { return a.id === document.getElementById('pay-acc').value; });
+  const warn    = document.getElementById('pay-warn');
+  const short   = !!(account && amount > account.balance);
+
+  if (short) {
+    warn.textContent   = account.name + ' has only ' + formatMoney(account.balance) + ' in Finio — not enough to pay from it. Pick another account or add funds.';
+    warn.style.display = 'block';
+  } else {
+    warn.style.display = 'none';
+  }
+
+  if (payState.step === 'confirm' && !payState.launched) {
+    const main = document.getElementById('pay-btn-main');
+    main.textContent = amount > 0 ? 'Pay ' + formatMoney(amount) + ' from Finio' : 'Pay from Finio';
+    main.disabled    = short;
+  }
+}
+
+function payBackOrCancel() {
+  if (payState.step === 'scan') { closeModal('pay-modal'); return; }
+  if (payState.step === 'pin')  { showPayStep('confirm'); updatePayCheck(); return; }
+
+  // confirm step ("Scan again") or the UPI "It failed — scan again"
+  payState.launched = false;
+  document.getElementById('pay-after').style.display = 'none';
+  showPayStep('scan');
+  startCamera();
+}
+
+function payMainAction() {
+  if (payState.step === 'success') { closeModal('pay-modal'); return; }
+  if (payState.step === 'pin')     { submitPin(); return; }
+
+  const amount = parseFloat(document.getElementById('pay-amt').value);
+  if (!amount || amount <= 0) { alert('Enter the amount to pay.'); return; }
+
+  // After a UPI handoff, this button is "Payment done": the user says it went through
+  if (payState.launched) { recordPayment(amount, 'upi'); return; }
+
+  goToPin(amount);
+}
+
+function recordPayment(amount, mode) {
+  const upi       = payState.params;
+  const label     = upi.name || upi.vpa;
+  const accountId = document.getElementById('pay-acc').value;
+  const account   = getUser().accounts.find(function(a) { return a.id === accountId; });
+  const now       = new Date();
+
+  addTransaction('Paid to ' + label.replace(/[<>&"'`]/g, ''), amount, 'expense',
+    document.getElementById('pay-cat').value, accountId, now);
+
+  saveToStorage();
+  renderAll();
+  if (appState.viewingAccId) renderAccountDetail();
+
+  if (mode !== 'finio') {              // UPI handoff: just close and confirm
+    closeModal('pay-modal');
+    showToast(formatMoney(amount) + ' paid to ' + label);
+    return;
+  }
+
+  // In-app payment: show a receipt
+  document.getElementById('pay-ok-amt').textContent  = formatMoney(amount);
+  document.getElementById('pay-ok-to').textContent   = 'Paid to ' + label;
+  document.getElementById('pay-ok-vpa').textContent  = upi.vpa;
+  document.getElementById('pay-ok-from').textContent = account ? account.name : '–';
+  document.getElementById('pay-ok-ref').textContent  = 'FIN' + String(now.getTime()).slice(-9);
+  document.getElementById('pay-ok-time').textContent = now.toLocaleString('en-IN', {
+    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
+  showPayStep('success');
+}
+
+// ---- UPI app handoff (secondary option) ----
+function startUpiHandoff() {
+  const amount = parseFloat(document.getElementById('pay-amt').value);
+  if (!amount || amount <= 0) { alert('Enter the amount to pay.'); return; }
+
+  payState.launched = true;
+  const after = document.getElementById('pay-after');
+  after.textContent = 'Finish the payment in your UPI app, then come back and tap "Payment done". '
+    + 'Nothing is deducted in Finio until you do. On a computer the UPI app won\'t open — pay from your phone, then tap "Payment done".';
+  after.style.display = 'block';
+
+  document.getElementById('pay-upi-link').style.display = 'none';
+  const main = document.getElementById('pay-btn-main');
+  main.textContent = 'Payment done';
+  main.disabled    = false;
+  document.getElementById('pay-btn-back').textContent = 'It failed — scan again';
+  window.location.href = buildUPILink(payState.params, amount);
+}
+
+// ---- In-app payment with a Finio PIN ----
+// Demo-grade: the PIN is stored as a simple salted hash in this browser's localStorage.
+function hashPin(pin) {
+  const str = appState.currentUser + ':' + pin;
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return String(4294967296 * (2097151 & h2) + (h1 >>> 0));
+}
+
+function showPinErr(msg) {
+  const el = document.getElementById('pay-pin-err');
+  el.textContent   = msg;
+  el.style.display = 'block';
+}
+
+function goToPin(amount) {
+  if (Date.now() < payState.lockUntil) {
+    const secs = Math.ceil((payState.lockUntil - Date.now()) / 1000);
+    showToast('Too many wrong PINs. Try again in ' + secs + 's.');
+    return;
+  }
+  const user = getUser();
+  payState.pinSetup = !user.payPin;
+  payState.tries    = 0;
+
+  document.getElementById('pay-pin-summary').textContent =
+    formatMoney(amount) + ' to ' + (payState.params.name || payState.params.vpa);
+  document.getElementById('pay-pin-label').textContent =
+    payState.pinSetup ? 'Create a 4-digit Finio PIN' : 'Enter your Finio PIN';
+  document.getElementById('pay-pin2-wrap').style.display  = payState.pinSetup ? 'block' : 'none';
+  document.getElementById('pay-pin-forgot').style.display = payState.pinSetup ? 'none'  : 'inline-block';
+  document.getElementById('pay-pin').value  = '';
+  document.getElementById('pay-pin2').value = '';
+  document.getElementById('pay-pin-err').style.display = 'none';
+
+  showPayStep('pin');
+  document.getElementById('pay-pin').focus();
+}
+
+function submitPin() {
+  const user   = getUser();
+  const pin    = document.getElementById('pay-pin').value;
+  const amount = parseFloat(document.getElementById('pay-amt').value);
+
+  if (!/^\d{4}$/.test(pin)) { showPinErr('Enter a 4-digit PIN.'); return; }
+
+  if (payState.pinSetup) {
+    if (pin !== document.getElementById('pay-pin2').value) { showPinErr('The two PINs do not match.'); return; }
+    user.payPin = hashPin(pin);
+  } else if (user.payPin !== hashPin(pin)) {
+    payState.tries++;
+    document.getElementById('pay-pin').value = '';
+    if (payState.tries >= 3) {
+      payState.lockUntil = Date.now() + 30000;
+      closeModal('pay-modal');
+      showToast('Too many wrong PINs — payment cancelled. Try again in 30s.');
+      return;
+    }
+    showPinErr('Wrong PIN. ' + (3 - payState.tries) + ' attempt' + (3 - payState.tries === 1 ? '' : 's') + ' left.');
+    return;
+  }
+
+  // Final safety check: never let an in-app payment overdraw the account
+  const account = user.accounts.find(function(a) { return a.id === document.getElementById('pay-acc').value; });
+  if (!account || amount > account.balance) {
+    showPayStep('confirm');
+    updatePayCheck();
+    return;
+  }
+  recordPayment(amount, 'finio');
+}
+
+// Forgot the PIN? Prove it's you with the account password, then set a new one.
+function resetPayPin() {
+  const pw = prompt('Enter your Finio account password to reset your PIN:');
+  if (pw === null) return;
+  if (pw !== getUser().password) { showPinErr('Wrong password.'); return; }
+  getUser().payPin = '';
+  saveToStorage();
+  goToPin(parseFloat(document.getElementById('pay-amt').value));
+}
+
+['pay-pin', 'pay-pin2'].forEach(function(id) {
+  document.getElementById(id).addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') payMainAction();
+  });
+});
+
+// Make sure the camera light goes off however the modal closes (Cancel, backdrop click, save)
+new MutationObserver(function() {
+  if (!document.getElementById('pay-modal').classList.contains('open')) stopCamera();
+}).observe(document.getElementById('pay-modal'), { attributes: true, attributeFilter: ['class'] });
+
+</script>
+
+</body>
+</html>
